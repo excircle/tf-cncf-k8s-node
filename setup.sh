@@ -2,12 +2,8 @@
 
 # Global Variables
 package_manager=${package_manager}
-disks=${disks}
 system_user=${system_user}
-use_repo_key=${use_repo_key}
-repo_key_secret_id=${repo_key_secret_id}
 node_name=${node_name}
-disk_size=${disk_size}
 
 install_custom_dependencies() {
     # DEBIAN/APT BASED
@@ -62,22 +58,6 @@ base_os_configuration() {
   # Check the status of chrony service
   echo "Checking the status of chrony service..."
   sudo chronyc tracking
-
-  # Establish Disks
-#   idx=1
-#   for disk in ${disks}; do
-#     sudo mkdir -p /mnt/data$idx
-#     sudo chown -R $system_user:$system_user /mnt/data$idx
-#     ((idx++))
-#   done
-
-#   # temp mount
-#   idx=1
-#   for disk in $(lsblk | grep 100G | awk '{print $1}' | sort); do
-#   	sudo mkfs.xfs /dev/$disk
-#   	sudo mount /dev/$disk /mnt/data$idx;
-#     ((idx++))
-#   done;
 
   # Update /etc/hosts file with private ips
   for host in ${hosts}; do

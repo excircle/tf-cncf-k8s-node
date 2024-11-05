@@ -48,12 +48,6 @@ variable "make_private" {
   default = false
 }
 
-variable "security_group_ids" {
-  description = "Security Group IDs"
-  type = list(string)
-}
-
-
 variable "aws_iam_role_name" {
   description = "AWS IAM Role Name"
   type = string
@@ -72,7 +66,12 @@ variable "ec2_instance_profile_name" {
   default = "ec2_instance_profile"
 }
 
-variable "root_block_device_size" {
+variable "ebs_root_volume_size" {
+  description = "Root Block Device Size"
+  type = number
+}
+
+variable "ebs_storage_volume_size" {
   description = "Root Block Device Size"
   type = number
 }
@@ -81,4 +80,45 @@ variable "num_disks" {
   description = "Number of disks to attach"
   type = number
   default = 1
+}
+
+variable "vpc_id" {
+  description = "VPC ID"
+  type = string
+}
+
+variable "az_count" {
+  description = "Number of AZs to use"
+  type = number
+}
+
+variable "subnets" {
+  description = "Subnets"
+  type = object({
+    private = list(string)
+    public  = list(string)
+  })
+}
+
+
+variable "aws_security_group_name" {
+  description = "AWS Security Group Name"
+  type = string
+  default = "minio-sg"
+}
+
+variable "bastion_host" {
+  description = "Create Bastion Host"
+  type = bool
+  default = false
+}
+
+variable "package_manager" {
+  description = "Package manager for provisioning"
+  type        = string
+}
+
+variable "system_user" {
+  description = "System user for Linux provisioning"
+  type        = string
 }

@@ -7,7 +7,30 @@ locals {
     Purpose   = null
   }
   // Host names
-  host_names = [for i in range(var.hosts) : "${var.application_name}-${i + 1}"]
-  // Disks
+  host_names = [for v in range(1, var.hosts+1): "${var.application_name}-${v}"]
   
+  // Disks
+  disks = [
+    "f",
+    "g",
+    "h",
+    "i",
+    "j",
+    "k",
+    "l",
+    "m",
+    "n",
+    "o",
+    "p",
+    "q",
+    "r",
+    "s",
+    "t",
+    "u",
+    "v",
+    "w",
+    "x",
+    "y",
+    "z"
+  ]
 }
