@@ -4,6 +4,7 @@
 package_manager=${package_manager}
 system_user=${system_user}
 node_name=${node_name}
+hosts=${hosts}
 
 install_custom_dependencies() {
     # DEBIAN/APT BASED
@@ -58,6 +59,25 @@ base_os_configuration() {
   # Check the status of chrony service
   echo "Checking the status of chrony service..."
   sudo chronyc tracking
+
+  # Establish Disks
+  INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
+  DISKS=$(aws ec2 describe-volumes --filters "Name=attachment.instance-id,Values=$INSTANCE_ID" --query "Volumes[*].{VolumeID:VolumeId, DeviceName:Attachments[0].Device}" --region "us-west-2" --output text | grep xvd | awk {'print $1'})
+  idx=1
+  
+  for DISK in $DISKS; do
+    sudo mkdir -p /mnt/data$idx
+    sudo chown -R root:root /mnt/data$idx
+    ((idx++))
+  done
+
+  # temp mount
+  idx=1
+  for DISK in $DISKS; do
+  	sudo mkfs.xfs $DISK
+  	sudo mount $DISK /mnt/data$idx;
+    ((idx++))
+  done;
 
   # Update /etc/hosts file with private ips
   for host in ${hosts}; do
