@@ -64,7 +64,7 @@ resource "aws_instance" "minio_host" {
 
 # Generate JSON file containing aws_instance.minio_host disk names for first host
 resource "local_file" "disk_info" {
-  count = var.generate_disk_info == true ? 1 : 0
+  count = var.generate_disk_info == true && var.hosts > 0 ? 1 : 0
   filename = "disk-info.json"
   content  = jsonencode({
     disks     = [for d in aws_instance.minio_host[format("%s-1", var.application_name)].ebs_block_device : d.device_name]
