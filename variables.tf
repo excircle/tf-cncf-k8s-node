@@ -122,3 +122,9 @@ variable "system_user" {
   description = "System user for Linux provisioning"
   type        = string
 }
+
+variable "generate_disk_info" {
+  description = "Generate disk_info.json file"
+  type = bool
+  default = false
+}
