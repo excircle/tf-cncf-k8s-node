@@ -35,20 +35,11 @@ resource "aws_instance" "minio_host" {
     delete_on_termination = true
   }
 
-  # MinIO EBS volume
-  dynamic "ebs_block_device" {
-    for_each = toset(slice(local.disks, 0, var.num_disks))
-    content {
-      device_name = "/dev/xvd${ebs_block_device.value}"
-      volume_size = var.ebs_storage_volume_size                                       # Set the size as needed
-      delete_on_termination = true
-    }
-  }
-
   # User data script to bootstrap MinIO
   user_data = base64encode(templatefile("${path.module}/setup.sh", {
         hosts               = join(" ", local.host_names)
         node_name           = "${each.key}"
+        disks               = join(" ", local.disk_names)
         package_manager     = var.package_manager
         system_user         = var.system_user
   } ))
@@ -60,15 +51,4 @@ resource "aws_instance" "minio_host" {
       Purpose = format("%s Cluster Node", var.application_name)
     }
   )
-}
-
-# Generate JSON file containing aws_instance.minio_host disk names for first host
-resource "local_file" "disk_info" {
-  count = var.generate_disk_info == true && var.hosts > 0 ? 1 : 0
-  filename = "disk-info.json"
-  content  = jsonencode({
-    disks     = [for d in aws_instance.minio_host[format("%s-1", var.application_name)].ebs_block_device : d.device_name]
-    size      = var.ebs_storage_volume_size
-    hostnames = local.host_names
-  })
 }

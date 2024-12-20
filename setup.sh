@@ -5,6 +5,7 @@ package_manager=${package_manager}
 system_user=${system_user}
 node_name=${node_name}
 hosts=${hosts}
+disks=${disks}
 
 install_custom_dependencies() {
     # DEBIAN/APT BASED
@@ -60,24 +61,29 @@ base_os_configuration() {
   echo "Checking the status of chrony service..."
   sudo chronyc tracking
 
+  # Until loop that waits for all xvd disks to be attached
+  echo "Starting disk wait loop"
+  echo $disks
+  for disk in ${disks}; do
+    name=$(echo $disk | sed "s|\/| |g" | awk {'print $NF'})
+    while [[ $(lsblk | grep $name | wc -l) == "0" ]]; do
+      echo "$(date) - Disk $disk not found...waiting..."
+      sleep 5
+    done;
+    echo "$(date) - Found $disk"
+  done;
+  echo "For loop completed"
+
   # Establish Disks
-  INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
-  DISKS=$(aws ec2 describe-volumes --filters "Name=attachment.instance-id,Values=$INSTANCE_ID" --query "Volumes[*].{VolumeID:VolumeId, DeviceName:Attachments[0].Device}" --region "us-west-2" --output text | grep xvd | awk {'print $1'})
   idx=1
-  
-  for DISK in $DISKS; do
+  for disk in ${disks}; do
+    sudo mkfs.xfs /dev/$disk
     sudo mkdir -p /mnt/data$idx
-    sudo chown -R root:root /mnt/data$idx
+    sudo mount /dev/$disk /mnt/data$idx
+    sudo chown -R minio-user:minio-user /mnt/data$idx  sudo chown -R minio-user:minio-user /mnt/data$idx
+    echo "/dev/$disk /mnt/data$idx xfs defaults,nofail 0 2" | sudo tee -a /etc/fstab
     ((idx++))
   done
-
-  # temp mount
-  idx=1
-  for DISK in $DISKS; do
-  	sudo mkfs.xfs $DISK
-  	sudo mount $DISK /mnt/data$idx;
-    ((idx++))
-  done;
 
   # Update /etc/hosts file with private ips
   for host in ${hosts}; do

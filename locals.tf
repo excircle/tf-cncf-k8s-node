@@ -33,4 +33,8 @@ locals {
     "y",
     "z"
   ]
+
+  disk_names = [ for d in toset(slice(local.disks, 0, var.num_disks)) : format("xvd%s", d) ]
+
 }
+
