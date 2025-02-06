@@ -28,6 +28,14 @@ base_os_configuration() {
   # APT
   sudo hostnamectl set-hostname $node_name
 
+  # If hostnamectl set-hostname command was successful, then write hostname to /etc/hostname-changed
+  if [[ $? -eq 0 ]]; then
+    echo "Hostname changed to ${node_name}"
+    echo ${node_name} | sudo tee /etc/hostname-changed
+  else
+    echo "Failed to change hostname to ${node_name}"
+  fi
+
   if [[ $package_manager == "apt" ]]; then
     # Set the timezone to America/Los_Angeles
     echo "Setting timezone to America/Los_Angeles..."
